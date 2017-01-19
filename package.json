@@ -1,0 +1,38 @@
+{
+  "name": "node-notifier-cli",
+  "version": "1.0.0",
+  "description": "CLI API for node-notifier",
+  "main": "bin.js",
+  "bin": {
+    "notify": "bin.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cli",
+    "notification center",
+    "mac os x 10.8",
+    "notify",
+    "terminal-notifier",
+    "notify-send",
+    "growl",
+    "windows 8 notification",
+    "toaster",
+    "notification"
+  ],
+  "author": "Mikael Brevik",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^3.13.1",
+    "eslint-config-semistandard": "^7.0.0",
+    "eslint-config-standard": "^6.2.1",
+    "eslint-plugin-promise": "^3.4.0",
+    "eslint-plugin-standard": "^2.0.1"
+  },
+  "dependencies": {
+    "cli-usage": "^0.1.4",
+    "minimist": "^1.2.0",
+    "node-notifier": "^4.6.1"
+  }
+}
