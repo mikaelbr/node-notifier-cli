@@ -34,5 +34,13 @@
     "cli-usage": "^0.1.4",
     "minimist": "^1.2.0",
     "node-notifier": "^4.6.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mikaelbr/node-notifier-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mikaelbr/node-notifier-cli/issues"
+  },
+  "homepage": "https://github.com/mikaelbr/node-notifier-cli#readme"
 }
