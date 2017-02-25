@@ -24,7 +24,7 @@ notify -h
     * --subtitle (alias -st)
     * --message (alias -m)
     * --icon (alias -i)
-    * --sound (alias -s)
+    * --sound (alias -s, use none to disable default sound notification)
     * --open (alias -o)
     * --port (alias -p)
     * --host
