@@ -70,7 +70,7 @@ function getOptionsIfExists(optionTypes, argv) {
   var options = {};
   optionTypes.forEach(function(key) {
     if (key && argv[key]) {
-      options[key] = argv[key];
+      options[key] = (key == 'sound' && argv[key] == 'none') ? false : argv[key];
     }
   });
   return options;
