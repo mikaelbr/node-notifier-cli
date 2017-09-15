@@ -8,6 +8,12 @@ Separate package for [`node-notifier`](https://github.com/mikaelbr/node-notifier
 npm i [-g] node-notifier-cli
 ```
 
+or try it out with [npx](https://www.npmjs.com/package/npx)
+
+```
+npx -p node-notifier-cli notify -t 'Hello' -m 'My message'
+```
+
 ## usage
 
 ```
