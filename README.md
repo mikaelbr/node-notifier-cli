@@ -34,6 +34,7 @@ notify -h
     * --open (alias -o)
     * --port (alias -p)
     * --host
+    * --failsafe (alias -x; time in milliseconds)
 
 ## Example
 

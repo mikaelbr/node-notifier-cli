@@ -12,12 +12,13 @@ var aliases = {
   icon: 'i',
   sound: 's',
   open: 'o',
-  port: 'p'
+  port: 'p',
+  failsafe: 'x'
 };
 
 var argv = minimist(process.argv.slice(2), {
   alias: aliases,
-  string: [ 'icon', 'message', 'open', 'subtitle', 'title', 'host', 'port' ]
+  string: [ 'icon', 'message', 'open', 'subtitle', 'title', 'host', 'port', 'failsafe' ]
 });
 
 readme(aliases, [ 'host' ]);
@@ -46,6 +47,10 @@ if (process.stdin.isTTY) {
     }
     doNotification(passedOptions);
   });
+  if (typeof passedOptions.failsafe !== 'undefined') {
+    setTimeout(function() { doNotification(passedOptions) }, passedOptions.failsafe);
+    delete passedOptions.failsafe; // Do not pass failsafe to notifier
+  }
 }
 
 function doNotification(options) {
@@ -59,9 +64,7 @@ function doNotification(options) {
       console.error(err.message);
       process.exit(1);
     }
-
-    if (!msg) return;
-    console.log(msg);
+    if (msg) console.log(msg);
     process.exit(0);
   });
 }
