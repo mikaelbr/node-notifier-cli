@@ -18,10 +18,19 @@ var aliases = {
 
 var argv = minimist(process.argv.slice(2), {
   alias: aliases,
-  string: [ 'icon', 'message', 'open', 'subtitle', 'title', 'host', 'port', 'failsafe' ]
+  string: [
+    'icon',
+    'message',
+    'open',
+    'subtitle',
+    'title',
+    'host',
+    'port',
+    'failsafe'
+  ]
 });
 
-readme(aliases, [ 'host' ]);
+readme(aliases, ['host']);
 
 var validOpts = Object.keys(aliases).concat('host');
 var passedOptions = getOptionsIfExists(validOpts, argv);
@@ -38,7 +47,6 @@ if (process.stdin.isTTY) {
     } else {
       doNotification(passedOptions);
       this.end();
-      return;
     }
   });
   process.stdin.on('end', function() {
@@ -49,7 +57,9 @@ if (process.stdin.isTTY) {
   });
 
   if (typeof passedOptions.failsafe !== 'undefined') {
-    setTimeout(function() { doNotification(passedOptions) }, passedOptions.failsafe);
+    setTimeout(function() {
+      doNotification(passedOptions);
+    }, passedOptions.failsafe);
     delete passedOptions.failsafe; // Do not pass failsafe to notifier
   }
 }
@@ -75,7 +85,8 @@ function getOptionsIfExists(optionTypes, argv) {
   var options = {};
   optionTypes.forEach(function(key) {
     if (key && argv[key]) {
-      options[key] = (key == 'sound' && argv[key] == 'none') ? false : argv[key];
+      options[key] =
+        key === 'sound' && argv[key] === 'none' ? false : argv[key];
     }
   });
   return options;
@@ -85,26 +96,24 @@ function readme(input, extra) {
   var str = '# notify\n \n## Options\n' + params(input, extra) + '\n\n';
   str += '## Example\n```shell\n';
   str += '$ notify -t "Hello" -m "My Message" -s --open http://github.com\n';
-  str += '$ notify -t "Agent Coulson" --icon https://raw.githubusercontent.com/mikaelbr/node-notifier/master/example/coulson.jpg \n';
+  str +=
+    '$ notify -t "Agent Coulson" --icon https://raw.githubusercontent.com/mikaelbr/node-notifier/master/example/coulson.jpg \n';
   str += '$ notify -m "My Message" -s Glass\n';
   str += '$ echo "My Message" | notify -t "Hello"```\n\n';
   usage(str);
 }
 
 function params(input, extra) {
-  var withAlias = Object.keys(input).reduce(
-    function(acc, key) {
-      return acc + ' * --' + key + ' (alias -' + input[key] + ')\n';
-    },
-    ''
-  );
+  var withAlias = Object.keys(input).reduce(function(acc, key) {
+    return acc + ' * --' + key + ' (alias -' + input[key] + ')\n';
+  }, '');
 
   if (!extra) return withAlias;
 
-  return withAlias + extra.reduce(
-      function(acc, key) {
-        return acc + ' * --' + key + '\n';
-      },
-      ''
-    );
+  return (
+    withAlias +
+    extra.reduce(function(acc, key) {
+      return acc + ' * --' + key + '\n';
+    }, '')
+  );
 }

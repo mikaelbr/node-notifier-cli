@@ -7,7 +7,7 @@
     "notify": "bin.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint bin.js"
   },
   "keywords": [
     "cli",
