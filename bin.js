@@ -13,7 +13,8 @@ var aliases = {
   sound: 's',
   open: 'o',
   port: 'p',
-  failsafe: 'x'
+  failsafe: 'x',
+  appID: 'a'
 };
 
 var argv = minimist(process.argv.slice(2), {
@@ -26,7 +27,8 @@ var argv = minimist(process.argv.slice(2), {
     'title',
     'host',
     'port',
-    'failsafe'
+    'failsafe',
+    'appID'
   ]
 });
 
