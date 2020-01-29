@@ -1,6 +1,6 @@
 {
   "name": "node-notifier-cli",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "CLI API for node-notifier",
   "main": "bin.js",
   "bin": {
