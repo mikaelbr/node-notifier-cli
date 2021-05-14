@@ -14,6 +14,7 @@ var aliases = {
   open: 'o',
   port: 'p',
   failsafe: 'x',
+  timeout: 'c',
   appID: 'a'
 };
 
@@ -28,6 +29,7 @@ var argv = minimist(process.argv.slice(2), {
     'host',
     'port',
     'failsafe',
+    'timeout',
     'appID'
   ]
 });
@@ -85,10 +87,22 @@ function doNotification(options) {
 
 function getOptionsIfExists(optionTypes, argv) {
   var options = {};
+
+  // Default timeout to false
+  optionTypes.timeout = false;
+
   optionTypes.forEach(function(key) {
     if (key && argv[key]) {
-      options[key] =
-        key === 'sound' && argv[key] === 'none' ? false : argv[key];
+      if (key === "timeout") {
+        options[key] = parseInt(argv[key]);
+
+        if (isNaN(options[key])) {
+          options[key] = false;
+        }
+      } else {
+        options[key] =
+          key === "sound" && argv[key] === "none" ? false : argv[key];
+      }
     }
   });
   return options;
