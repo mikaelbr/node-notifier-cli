@@ -35,7 +35,7 @@
   "dependencies": {
     "cli-usage": "^0.1.10",
     "minimist": "^1.2.5",
-    "node-notifier": "^8.0.1"
+    "node-notifier": "^8.0.2"
   },
   "repository": {
     "type": "git",
