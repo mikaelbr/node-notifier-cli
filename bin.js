@@ -93,7 +93,7 @@ function getOptionsIfExists(optionTypes, argv) {
 
   optionTypes.forEach(function(key) {
     if (key && argv[key]) {
-      if (key === "timeout") {
+      if (key === 'timeout') {
         options[key] = parseInt(argv[key]);
 
         if (isNaN(options[key])) {
@@ -101,7 +101,7 @@ function getOptionsIfExists(optionTypes, argv) {
         }
       } else {
         options[key] =
-          key === "sound" && argv[key] === "none" ? false : argv[key];
+          key === 'sound' && argv[key] === 'none' ? false : argv[key];
       }
     }
   });
