@@ -109,7 +109,7 @@ function getOptionsIfExists(optionTypes, argv) {
 }
 
 function readme(input, extra) {
-  var str = '# notify\n \n## Options\n' + params(input, extra) + '\n\n';
+  var str = `# notify\n \n## Options\n ${params(input, extra)} \n\n`;
   str += '## Example\n```shell\n';
   str += '$ notify -t "Hello" -m "My Message" -s --open http://github.com\n';
   str +=
@@ -121,15 +121,15 @@ function readme(input, extra) {
 
 function params(input, extra) {
   var withAlias = Object.keys(input).reduce(function(acc, key) {
-    return acc + ' * --' + key + ' (alias -' + input[key] + ')\n';
+    return `${acc} * -- ${key} (alias - ${input[key]})\n`;
   }, '');
 
   if (!extra) return withAlias;
 
   return (
-    withAlias +
-    extra.reduce(function(acc, key) {
+    `${withAlias}
+    ${extra.reduce(function(acc, key) {
       return acc + ' * --' + key + '\n';
-    }, '')
+    }, '')}`
   );
 }
