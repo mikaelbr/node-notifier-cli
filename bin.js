@@ -40,6 +40,9 @@ var validOpts = Object.keys(aliases).concat('host');
 var passedOptions = getOptionsIfExists(validOpts, argv);
 var stdinMessage = '';
 
+// Track if message was explicitly provided via CLI
+var hasExplicitMessage = argv.message || argv.m !== undefined;
+
 if (process.stdin.isTTY) {
   doNotification(passedOptions);
 } else {
@@ -54,7 +57,8 @@ if (process.stdin.isTTY) {
     }
   });
   process.stdin.on('end', function() {
-    if (stdinMessage) {
+    // Only use stdin message if no explicit message was provided via CLI
+    if (stdinMessage && !hasExplicitMessage) {
       passedOptions.message = stdinMessage;
     }
     doNotification(passedOptions);
@@ -93,15 +97,23 @@ function getOptionsIfExists(optionTypes, argv) {
 
   optionTypes.forEach(function(key) {
     if (key && argv[key]) {
-      if (key === 'timeout') {
-        options[key] = parseInt(argv[key]);
+      var value = argv[key];
 
-        if (isNaN(options[key])) {
-          options[key] = false;
+      if (key === 'timeout') {
+        value = parseInt(value);
+        if (isNaN(value)) {
+          value = false;
         }
+        options[key] = value;
+      } else if (key === 'sound' && value === 'none') {
+        options[key] = false;
       } else {
-        options[key] =
-          key === 'sound' && argv[key] === 'none' ? false : argv[key];
+        // Strip quotes from the value (handles both single and double quotes)
+        // This is needed for Windows cmd where quotes are not stripped properly
+        if (typeof value === 'string') {
+          value = value.replace(/^['"]+|['"]+$/g, '');
+        }
+        options[key] = value;
       }
     }
   });
