@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import pkg from '../package.json' with { type: 'json' };
 
-const bin = new URL('../bin.js', import.meta.url).pathname;
+const bin = fileURLToPath(new URL('../bin.js', import.meta.url));
 
 function notify(args, input = '') {
   return spawnSync(process.execPath, [bin, ...args], {
