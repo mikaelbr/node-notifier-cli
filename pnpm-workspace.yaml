@@ -1,0 +1,2 @@
+minimumReleaseAgeExclude:
+  - node-notifier@12.0.0

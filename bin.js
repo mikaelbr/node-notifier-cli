@@ -1,135 +1,124 @@
 #!/usr/bin/env node
 
-var Notification = require('node-notifier').Notification;
-var minimist = require('minimist');
-var usage = require('cli-usage');
+import { text } from 'node:stream/consumers';
+import { setTimeout } from 'node:timers/promises';
+import { parseArgs, promisify, styleText } from 'node:util';
+import { Notification } from 'node-notifier';
+import pkg from './package.json' with { type: 'json' };
 
-var aliases = {
-  help: 'h',
-  title: 't',
-  subtitle: 'st',
-  message: 'm',
-  icon: 'i',
-  sound: 's',
-  open: 'o',
-  port: 'p',
-  failsafe: 'x',
-  timeout: 'c',
-  appID: 'a'
+const options = {
+  help: { type: 'boolean', short: 'h' },
+  version: { type: 'boolean', short: 'v' },
+  title: { type: 'string', short: 't' },
+  subtitle: { type: 'string' },
+  message: { type: 'string', short: 'm' },
+  icon: { type: 'string', short: 'i' },
+  sound: { type: 'string', short: 's' },
+  open: { type: 'string', short: 'o' },
+  host: { type: 'string' },
+  port: { type: 'string', short: 'p' },
+  failsafe: { type: 'string', short: 'x' },
+  timeout: { type: 'string', short: 'c' },
+  appID: { type: 'string', short: 'a' }
 };
 
-var argv = minimist(process.argv.slice(2), {
-  alias: aliases,
-  string: [
-    'icon',
-    'message',
-    'open',
-    'subtitle',
-    'title',
-    'host',
-    'port',
-    'failsafe',
-    'timeout',
-    'appID'
-  ]
-});
+const descriptions = {
+  subtitle: 'not available on Windows',
+  sound: 'optional sound name; use "none" to disable the default sound',
+  failsafe: 'ms to wait for stdin before notifying anyway',
+  timeout: 'seconds before the notification is dismissed'
+};
 
-readme(aliases, ['host']);
-
-var validOpts = Object.keys(aliases).concat('host');
-var passedOptions = getOptionsIfExists(validOpts, argv);
-var stdinMessage = '';
-
-if (process.stdin.isTTY) {
-  doNotification(passedOptions);
-} else {
-  process.stdin.resume();
-  process.stdin.setEncoding('utf8');
-  process.stdin.on('data', function(data) {
-    if (data) {
-      stdinMessage += data;
-    } else {
-      doNotification(passedOptions);
-      this.end();
-    }
-  });
-  process.stdin.on('end', function() {
-    if (stdinMessage) {
-      passedOptions.message = stdinMessage;
-    }
-    doNotification(passedOptions);
-  });
-
-  if (typeof passedOptions.failsafe !== 'undefined') {
-    setTimeout(function() {
-      doNotification(passedOptions);
-    }, passedOptions.failsafe);
-    delete passedOptions.failsafe; // Do not pass failsafe to notifier
-  }
+let values;
+try {
+  ({ values } = parseArgs({
+    args: withBareSound(process.argv.slice(2)),
+    options
+  }));
+} catch (error) {
+  console.error(`${error.message}\nRun "notify --help" for usage.`);
+  process.exit(1);
 }
 
-function doNotification(options) {
-  var notifier = new Notification(options);
-  if (!options.message) {
-    // Do not show an empty message
-    process.exit(0);
-  }
-  notifier.notify(options, function(err, msg) {
-    if (err) {
-      console.error(err.message);
-      process.exit(1);
-    }
-
-    if (msg) console.log(msg);
-    process.exit(0);
-  });
+if (values.help) {
+  console.log(usage());
+  process.exit(0);
 }
 
-function getOptionsIfExists(optionTypes, argv) {
-  var options = {};
-
-  // Default timeout to false
-  optionTypes.timeout = false;
-
-  optionTypes.forEach(function(key) {
-    if (key && argv[key]) {
-      if (key === 'timeout') {
-        options[key] = parseInt(argv[key]);
-
-        if (isNaN(options[key])) {
-          options[key] = false;
-        }
-      } else {
-        options[key] =
-          key === 'sound' && argv[key] === 'none' ? false : argv[key];
-      }
-    }
-  });
-  return options;
+if (values.version) {
+  console.log(pkg.version);
+  process.exit(0);
 }
 
-function readme(input, extra) {
-  var str = '# notify\n \n## Options\n' + params(input, extra) + '\n\n';
-  str += '## Example\n```shell\n';
-  str += '$ notify -t "Hello" -m "My Message" -s --open http://github.com\n';
-  str +=
-    '$ notify -t "Agent Coulson" --icon https://raw.githubusercontent.com/mikaelbr/node-notifier/master/example/coulson.jpg \n';
-  str += '$ notify -m "My Message" -s Glass\n';
-  str += '$ echo "My Message" | notify -t "Hello"```\n\n';
-  usage(str);
+const { help, version, failsafe, ...notification } = values;
+
+if (notification.sound === 'none') notification.sound = false;
+else if (notification.sound === 'true') notification.sound = true;
+
+if (notification.timeout !== undefined) {
+  const seconds = Number.parseInt(notification.timeout, 10);
+  notification.timeout = Number.isNaN(seconds) ? false : seconds;
 }
 
-function params(input, extra) {
-  var withAlias = Object.keys(input).reduce(function(acc, key) {
-    return acc + ' * --' + key + ' (alias -' + input[key] + ')\n';
-  }, '');
+if (!process.stdin.isTTY) {
+  const message = await readStdin(Number(failsafe) || undefined);
+  if (message) notification.message = message;
+}
 
-  if (!extra) return withAlias;
+// Do not show an empty message
+if (!notification.message) process.exit(0);
 
-  return (
-    withAlias +
-    extra.reduce(function(acc, key) {
-      return acc + ' * --' + key + '\n';
-    }, '')
+const notifier = new Notification(notification);
+try {
+  const response = await promisify(notifier.notify.bind(notifier))(
+    notification
   );
+  if (response) console.log(response);
+  process.exit(0);
+} catch (error) {
+  console.error(error.message);
+  process.exit(1);
+}
+
+/**
+ * `--sound` is both a flag and an option with a value (`-s Glass`), which
+ * parseArgs cannot express, so give a bare flag an explicit value.
+ */
+function withBareSound(args) {
+  return args.flatMap((arg, i) => {
+    const next = args[i + 1];
+    const isBare = next === undefined || next.startsWith('-');
+    return (arg === '-s' || arg === '--sound') && isBare ? [arg, 'true'] : arg;
+  });
+}
+
+/** Reads piped stdin, giving up after `failsafe` ms if it never ends. */
+async function readStdin(failsafe) {
+  process.stdin.setEncoding('utf8');
+  const input = text(process.stdin);
+  const result = await (failsafe === undefined
+    ? input
+    : Promise.race([input, setTimeout(failsafe, '', { ref: false })]));
+  return result.replace(/\r?\n$/, '');
+}
+
+function usage() {
+  const flags = Object.entries(options).map(([name, { short }]) => {
+    const notes = [short && `alias -${short}`, descriptions[name]];
+    const extra = notes.filter(Boolean).join('; ');
+    return `  --${name}${extra ? ` (${extra})` : ''}`;
+  });
+
+  return [
+    styleText('bold', 'Usage: notify [options]'),
+    '',
+    styleText('bold', 'Options'),
+    ...flags,
+    '',
+    styleText('bold', 'Examples'),
+    '  $ notify -t "Hello" -m "My Message" -s --open http://github.com',
+    '  $ notify -t "Agent Coulson" --icon https://raw.githubusercontent.com/mikaelbr/node-notifier/master/example/coulson.jpg',
+    '  $ notify -m "My Message" -s Glass',
+    '  $ echo "My Message" | notify -t "Hello"'
+  ].join('\n');
 }

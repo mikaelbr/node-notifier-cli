@@ -2,47 +2,50 @@
   "name": "node-notifier-cli",
   "version": "2.0.0",
   "description": "CLI API for node-notifier",
-  "main": "bin.js",
-  "bin": {
-    "notify": "bin.js"
-  },
-  "scripts": {
-    "lint": "eslint bin.js"
-  },
   "keywords": [
     "cli",
     "notification center",
-    "mac os x 10.8",
+    "macos",
     "notify",
     "terminal-notifier",
     "notify-send",
     "growl",
-    "windows 8 notification",
+    "windows notification",
     "toaster",
     "notification"
   ],
-  "author": "Mikael Brevik",
-  "license": "MIT",
-  "devDependencies": {
-    "eslint": "^6.8.0",
-    "eslint-config-semistandard": "^15.0.0",
-    "eslint-config-standard": "^14.1.1",
-    "eslint-plugin-import": "^2.20.2",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1"
-  },
-  "dependencies": {
-    "cli-usage": "^0.1.10",
-    "minimist": "^1.2.5",
-    "node-notifier": "^8.0.2"
+  "homepage": "https://github.com/mikaelbr/node-notifier-cli#readme",
+  "bugs": {
+    "url": "https://github.com/mikaelbr/node-notifier-cli/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mikaelbr/node-notifier-cli.git"
   },
-  "bugs": {
-    "url": "https://github.com/mikaelbr/node-notifier-cli/issues"
+  "license": "MIT",
+  "author": "Mikael Brevik",
+  "type": "module",
+  "bin": {
+    "node-notifier-cli": "./bin.js",
+    "notify": "./bin.js"
   },
-  "homepage": "https://github.com/mikaelbr/node-notifier-cli#readme"
+  "files": [
+    "bin.js"
+  ],
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+  },
+  "packageManager": "pnpm@12.16.1",
+  "scripts": {
+    "pretest": "pnpm run lint",
+    "test": "node --test",
+    "lint": "biome check",
+    "format": "biome check --write"
+  },
+  "dependencies": {
+    "node-notifier": "^12.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.3"
+  }
 }
