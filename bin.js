@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+import { mkdtemp, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { basename, join, resolve } from 'node:path';
 import { text } from 'node:stream/consumers';
 import { setTimeout } from 'node:timers/promises';
 import { parseArgs, promisify, styleText } from 'node:util';
@@ -13,6 +16,7 @@ const options = {
   subtitle: { type: 'string' },
   message: { type: 'string', short: 'm' },
   icon: { type: 'string', short: 'i' },
+  contentImage: { type: 'string' },
   sound: { type: 'string', short: 's' },
   open: { type: 'string', short: 'o' },
   host: { type: 'string' },
@@ -24,6 +28,8 @@ const options = {
 
 const descriptions = {
   subtitle: 'not available on Windows',
+  icon: 'not shown on macOS, use --contentImage',
+  contentImage: 'macOS only; image file or URL shown in the notification',
   sound: 'optional sound name; use "none" to disable the default sound',
   failsafe: 'ms to wait for stdin before notifying anyway',
   timeout: 'seconds before the notification is dismissed'
@@ -68,6 +74,15 @@ if (!process.stdin.isTTY) {
 // Do not show an empty message
 if (!notification.message) process.exit(0);
 
+if (notification.contentImage) {
+  try {
+    notification.contentImage = await toLocalFile(notification.contentImage);
+  } catch (error) {
+    console.error(`Could not load --contentImage: ${error.message}`);
+    process.exit(1);
+  }
+}
+
 const notifier = new Notification(notification);
 try {
   const response = await promisify(notifier.notify.bind(notifier))(
@@ -76,7 +91,8 @@ try {
   if (response) console.log(response);
   process.exit(0);
 } catch (error) {
-  console.error(error.message);
+  // node-notifier reports some errors as plain strings
+  console.error(error instanceof Error ? error.message : String(error).trim());
   process.exit(1);
 }
 
@@ -90,6 +106,22 @@ function withBareSound(args) {
     const isBare = next === undefined || next.startsWith('-');
     return (arg === '-s' || arg === '--sound') && isBare ? [arg, 'true'] : arg;
   });
+}
+
+/**
+ * terminal-notifier only takes absolute paths to local images, so resolve
+ * relative paths and download URLs to a temporary file.
+ */
+async function toLocalFile(image) {
+  if (!/^https?:\/\//.test(image)) return resolve(image);
+
+  const response = await fetch(image);
+  if (!response.ok) throw new Error(`${response.status} for ${image}`);
+
+  const dir = await mkdtemp(join(tmpdir(), 'node-notifier-cli-'));
+  const file = join(dir, basename(new URL(image).pathname) || 'image');
+  await writeFile(file, Buffer.from(await response.arrayBuffer()));
+  return file;
 }
 
 /** Reads piped stdin, giving up after `failsafe` ms if it never ends. */
@@ -117,7 +149,7 @@ function usage() {
     '',
     styleText('bold', 'Examples'),
     '  $ notify -t "Hello" -m "My Message" -s --open http://github.com',
-    '  $ notify -t "Agent Coulson" --icon https://raw.githubusercontent.com/mikaelbr/node-notifier/master/example/coulson.jpg',
+    '  $ notify -t "Agent Coulson" --contentImage https://raw.githubusercontent.com/mikaelbr/node-notifier/master/example/coulson.jpg',
     '  $ notify -m "My Message" -s Glass',
     '  $ echo "My Message" | notify -t "Hello"'
   ].join('\n');

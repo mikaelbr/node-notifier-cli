@@ -37,3 +37,14 @@ test('exits quietly without a message', () => {
   assert.equal(stdout, '');
   assert.equal(stderr, '');
 });
+
+test('reports images that cannot be loaded', () => {
+  const { status, stderr } = notify([
+    '-m',
+    'Hello',
+    '--contentImage',
+    'https://example.invalid/missing.png'
+  ]);
+  assert.equal(status, 1);
+  assert.match(stderr, /Could not load --contentImage/);
+});

@@ -34,7 +34,8 @@ Options
   --title (alias -t)
   --subtitle (not available on Windows)
   --message (alias -m)
-  --icon (alias -i)
+  --icon (alias -i; not shown on macOS, use --contentImage)
+  --contentImage (macOS only; image file or URL shown in the notification)
   --sound (alias -s; optional sound name; use "none" to disable the default sound)
   --open (alias -o)
   --host
@@ -45,7 +46,7 @@ Options
 
 Examples
   $ notify -t "Hello" -m "My Message" -s --open http://github.com
-  $ notify -t "Agent Coulson" --icon https://raw.githubusercontent.com/mikaelbr/node-notifier/master/example/coulson.jpg
+  $ notify -t "Agent Coulson" --contentImage https://raw.githubusercontent.com/mikaelbr/node-notifier/master/example/coulson.jpg
   $ notify -m "My Message" -s Glass
   $ echo "My Message" | notify -t "Hello"
 ```
